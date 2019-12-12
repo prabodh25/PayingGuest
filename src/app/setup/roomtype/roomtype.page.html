@@ -1,0 +1,13 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Room Types</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+    <ion-list>
+      <ion-item *ngFor="let item of (roomtypes | async)" button="true" [routerLink]="['/tabs/setup/roomtypedetails', item.id]" routerDirection="forward">
+        <ion-label>{{ item.RoomName }}</ion-label>
+      </ion-item>
+    </ion-list>
+</ion-content>

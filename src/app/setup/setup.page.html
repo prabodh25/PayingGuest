@@ -1,0 +1,25 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Set Up</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-list>
+    <ion-item (click)="userList()" button="true">
+      <ion-icon name="person" size="large" slot="start" color="primary"></ion-icon>
+      <!-- <img src="https://gravatar.com/avatar/dba6bae8c566f9d4041fb9cd9ada7741?d=identicon&f=y"> -->
+      <ion-label>Users</ion-label>
+    </ion-item>
+    <ion-item [routerLink]="'/tabs/setup/apartment'" routerDirection="forward" button="true">
+      <ion-icon name="home" size="large" slot="start" color="primary"></ion-icon>
+      <!-- <img src=""> -->
+      <ion-label>Facilities</ion-label>
+    </ion-item>
+    <ion-item [routerLink]="'/tabs/setup/roomtype'" routerDirection="forward" button="true">
+      <ion-icon name="bed" size="large" slot="start" color="primary"></ion-icon>
+      <!-- <img src=""> -->
+      <ion-label>Room Types</ion-label>
+    </ion-item>
+  </ion-list>
+</ion-content>

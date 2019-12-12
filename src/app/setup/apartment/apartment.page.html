@@ -1,0 +1,22 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button></ion-back-button>
+    </ion-buttons>
+    <ion-title>Apartments</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-searchbar type="text" showCancelButton="focus" (ionChange)="filterApartments($event)"></ion-searchbar>
+  <ion-list>
+    <ion-item *ngFor="let item of (loadedApartments | async)" button="true" [routerLink]="['/tabs/setup/apartmentdetails', item.id]" routerDirection="forward">
+      <ion-label>{{ item.ApartmentName }}</ion-label>
+    </ion-item>
+  </ion-list>
+  <ion-fab vertical="bottom" horizontal="end" slot="fixed">
+      <ion-fab-button [routerLink]="['/tabs/setup/apartmentdetails', 'new']" routerDirection="forward">
+        <ion-icon name="add"></ion-icon>
+      </ion-fab-button>
+    </ion-fab>
+</ion-content>
