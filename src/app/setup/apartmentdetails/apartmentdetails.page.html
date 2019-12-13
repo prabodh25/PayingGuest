@@ -8,62 +8,63 @@
 </ion-header>
 
 <ion-content>
-  <ion-label *ngIf="!apt">Loading...</ion-label>
-  <ion-list style="padding: 2%;" *ngIf="apt">
-    <ion-item>
-      <ion-label color="primary" position="floating">Facility Name</ion-label>
-      <ion-input type="text" [(ngModel)]="apt.ApartmentName"></ion-input>
-    </ion-item>
-    <ion-item>
-      <ion-label color="primary" position="floating">Facility Type</ion-label>
-      <ion-select>
-          <ion-select-option value="f">1 BHK</ion-select-option>
-          <ion-select-option value="m">2 BHK</ion-select-option>
+  <ion-list style="padding: 2%;" >
+    <form (ngSubmit)="onSaveClick()" [formGroup]="apartmentForm">
+      <ion-item>
+        <ion-label color="primary" position="floating">Facility Name</ion-label>
+        <ion-input type="text" formControlName="apartmentName"></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-label color="primary" position="floating" >Facility Type</ion-label>
+        <ion-select formControlName="apartmentType" >
+          <ion-select-option *ngFor="let type of apartTypes" [value]="type">
+            {{type.TypeName}}
+          </ion-select-option>
         </ion-select>
-      
-    </ion-item>
-    <ion-item [routerLink]="'/tabs/setup/beddetails'" routerDirection="forward" button="true">
-      <ion-label color="primary">Bed Details</ion-label>
-      <ion-badge color="success" slot="end">4</ion-badge>
-      <ion-badge color="danger" slot="end">3</ion-badge>
-    </ion-item>
-    <ion-item>
-      <ion-label color="primary" position="floating">Address Line 1</ion-label>
-      <ion-input type="text"></ion-input>
-    </ion-item>
-    <ion-item>
-      <ion-label color="primary" position="floating">Address Line 2</ion-label>
-      <ion-input type="text"></ion-input>
-    </ion-item>
-    <ion-item>
-      <ion-label color="primary" position="floating">Address Line 3</ion-label>
-      <ion-input type="text"></ion-input>
-    </ion-item>
-    <ion-item>
-      <ion-label color="primary" position="floating">State</ion-label>
-      <ion-input type="text"></ion-input>
-    </ion-item>
-    <ion-item>
-      <ion-label color="primary" position="floating">City</ion-label>
-      <ion-input type="text"></ion-input>
-    </ion-item>
-    <ion-item>
-      <ion-label color="primary" position="floating">PIN</ion-label>
-      <ion-input type="number"></ion-input>
-    </ion-item>
-    <ion-item>
-      <ion-label color="primary" position="floating">Phone 1</ion-label>
-      <ion-input type="tel"></ion-input>
-    </ion-item>
-    <ion-item>
-      <ion-label color="primary" position="floating">Phone 2</ion-label>
-      <ion-input type="tel"></ion-input>
-    </ion-item>
+      </ion-item>
+      <ion-item [routerLink]="'/tabs/setup/beddetails'" routerDirection="forward" button="true">
+        <ion-label color="primary">Bed Details</ion-label>
+        <ion-badge color="success" slot="end">4</ion-badge>
+        <ion-badge color="danger" slot="end">3</ion-badge>
+      </ion-item>
+      <ion-item>
+        <ion-label color="primary" position="floating">Address Line 1</ion-label>
+        <ion-input type="text" formControlName="address1"></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-label color="primary" position="floating">Address Line 2</ion-label>
+        <ion-input type="text" formControlName="address2"></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-label color="primary" position="floating">Address Line 3</ion-label>
+        <ion-input type="text" formControlName="address3"></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-label color="primary" position="floating">State</ion-label>
+        <ion-input type="text" formControlName="state"></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-label color="primary" position="floating">City</ion-label>
+        <ion-input type="text" formControlName="city"></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-label color="primary" position="floating">PIN</ion-label>
+        <ion-input type="number" formControlName="pin"></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-label color="primary" position="floating">Phone 1</ion-label>
+        <ion-input type="tel" formControlName="phone1"></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-label color="primary" position="floating">Phone 2</ion-label>
+        <ion-input type="tel" formControlName="phone2"></ion-input>
+      </ion-item>
+    </form>
   </ion-list>
 </ion-content>
 <ion-footer>
-    <ion-toolbar>
-      <ion-button slot="end" color="secondary" size="small">Cancel</ion-button>
-      <ion-button slot="end" color="primary" size="small">Save</ion-button>
-    </ion-toolbar>
-  </ion-footer>
+  <ion-toolbar>
+    <ion-button slot="end" color="secondary" size="small">Cancel</ion-button>
+    <ion-button slot="end" color="primary" size="small">Save</ion-button>
+  </ion-toolbar>
+</ion-footer>
