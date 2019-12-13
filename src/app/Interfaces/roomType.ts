@@ -1,6 +1,6 @@
-export interface roomType{
-    id:string;
-    RoomName:string;
-    IsDeleted:boolean;
-    ModifiedDate:Date;
+export interface roomType {
+    id: string;
+    RoomTypeName: string;
+    IsDeleted: boolean;
+    ModifiedDate: Date;
 }
