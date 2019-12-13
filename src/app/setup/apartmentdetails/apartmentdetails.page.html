@@ -9,7 +9,7 @@
 
 <ion-content>
   <ion-list style="padding: 2%;" >
-    <form (ngSubmit)="onSaveClick()" [formGroup]="apartmentForm">
+    <form [formGroup]="apartmentForm">
       <ion-item>
         <ion-label color="primary" position="floating">Facility Name</ion-label>
         <ion-input type="text" formControlName="apartmentName"></ion-input>
@@ -65,6 +65,6 @@
 <ion-footer>
   <ion-toolbar>
     <ion-button slot="end" color="secondary" size="small">Cancel</ion-button>
-    <ion-button slot="end" color="primary" size="small">Save</ion-button>
+    <ion-button slot="end" color="primary" size="small" (click)="onSaveClick()">Save</ion-button>
   </ion-toolbar>
 </ion-footer>

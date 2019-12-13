@@ -35,6 +35,7 @@ export class ApartmentService {
   }
 
   initializeApartmentTypes() {
+    console.log("initializeApartmentTypes");
     this.apartmentTypeCollection = this.afs.collection<apartmentType>('ApartmentType');
     this.aptType = this.apartmentTypeCollection.snapshotChanges().pipe(map(actions => {
       return actions.map(a => {
@@ -139,7 +140,7 @@ export class ApartmentService {
           }
           //create phone object
           const objPhone: phone = {
-            ApartmentID: aptDocRef,
+            ApartmentID: aptRef,
             Home: 0,
             Office: 0,
             Phone1: obj.phone1,
@@ -180,7 +181,8 @@ export class ApartmentService {
     if (!this.aptType)
       this.initializeApartmentTypes();
 
-    console.log(this.aptType);
+    console.log("getApartmentTypes");
+    //console.log(this.aptType);
     return this.aptType;
   }
 }
