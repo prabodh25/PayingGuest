@@ -1,4 +1,5 @@
 export interface phone{
+    id:string;
     ApartmentID:any;
     Home:number;
     Office:number;
