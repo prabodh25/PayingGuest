@@ -8,6 +8,7 @@ import { apartmentType } from 'src/app/Interfaces/apartmentType';
 import { Subscription } from 'rxjs';
 import { LoaderService } from 'src/app/services/loader.service';
 import { AlertController } from '@ionic/angular';
+import { Location } from '@angular/common';
 
 @Component({
   selector: 'app-apartmentdetails',
@@ -24,8 +25,16 @@ export class ApartmentdetailsPage implements OnInit {
   apartmentTypesSubsription: Subscription;
 
   constructor(private route: ActivatedRoute, private apartmentService: ApartmentService,
-    private formBuilder: FormBuilder, private loader: LoaderService, private alert: AlertController) {
-
+    private formBuilder: FormBuilder, private loader: LoaderService, private alert: AlertController,
+    private loc: Location) {
+    //console.log('constructor');
+    this.apartTypes.push({
+      id: '',
+      TypeName: '',
+      IsDeleted: false,
+      ModifiedDate: new Date()
+    })
+    console.log(this.apartTypes);
     this.apartmentForm = formBuilder.group({
       apartmentName: new FormControl('', Validators.compose([
         Validators.required
@@ -59,24 +68,22 @@ export class ApartmentdetailsPage implements OnInit {
   }
 
   ionViewDidEnter() {
-    // console.log('ionViewDidEnter');
+    //console.log('ionViewDidEnter');
     // console.log(this.apartTypes);
     this.loader.showLoader();
-    if (this.apartTypes.length > 0)
-      this.getDetails();
-    else {
-      this.apartmentTypesSubsription = this.apartmentService.getApartmentTypes().subscribe(types => {
-        // console.log('Inside subscription');
-        // console.log(types);
-        this.apartTypes = types;
-        this.getDetails();
 
-      },
-        err => {
-          console.log(err);
-          this.loader.hideLoader();
-        });
-    }
+    this.apartmentTypesSubsription = this.apartmentService.getApartmentTypes().subscribe(types => {
+      // console.log('Inside subscription');
+      // console.log(types);
+      this.apartTypes = types;
+      this.getDetails();
+
+    },
+      err => {
+        console.log(err);
+        this.loader.hideLoader();
+      });
+
   }
 
   ionViewWillLeave() {
@@ -141,8 +148,8 @@ export class ApartmentdetailsPage implements OnInit {
     this.apartmentService.createApartment(this.aptId, this.addId, this.phoneId, this.apartmentForm.value)
       .then(res => {
         this.loader.hideLoader();
-          this.presentAlert('Facility created successfully');
-          //console.log('success');
+        this.presentAlert('Facility created successfully');
+        //console.log('success');
       })
       .catch(err => {
         this.loader.hideLoader();
@@ -151,19 +158,12 @@ export class ApartmentdetailsPage implements OnInit {
 
   }
 
-  showAlert(){
+  showAlert() {
     this.presentAlert("test");
   }
 
   async presentAlert(msg: string) {
-    const myalert = await this.alert.create({
-      header: 'Paying Guest',
-      subHeader: 'Facility',
-      message: msg,
-      buttons: ['OK']
-    });
-
-    await myalert.present();
+    this.loc.back();
   }
 
 }
