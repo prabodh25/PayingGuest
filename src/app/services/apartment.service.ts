@@ -1,13 +1,17 @@
 import { Injectable } from '@angular/core';
-import { AngularFirestore, AngularFirestoreCollection, AngularFirestoreDocument, DocumentReference } from '@angular/fire/firestore';
+import { AngularFirestore, AngularFirestoreCollection, AngularFirestoreDocument, DocumentReference, SnapshotOptions } from '@angular/fire/firestore';
 import { map, take, switchMap, mergeMap } from 'rxjs/operators';
-import { Observable, combineLatest, of } from 'rxjs';
+import { Observable, combineLatest, of, from, pipe } from 'rxjs';
 import { apartment } from '../Interfaces/apartment';
 import { Promise } from 'q';
 import { address } from '../Interfaces/address';
 import { phone } from '../Interfaces/phone';
 import { apartmentType } from '../Interfaces/apartmentType';
 import { del } from 'selenium-webdriver/http';
+import { ConstantsService } from './constants.service';
+import { bed } from '../Interfaces/bed';
+import { users } from '../Interfaces/user';
+import { dashboardItem } from '../Interfaces/dashboardItem';
 
 @Injectable({
   providedIn: 'root'
@@ -19,13 +23,13 @@ export class ApartmentService {
   private apartmentCollection: AngularFirestoreCollection<apartment>;
   private apartmentTypeCollection: AngularFirestoreCollection<apartmentType>;
 
-  constructor(private afs: AngularFirestore) {
+  constructor(private afs: AngularFirestore, private constants: ConstantsService) {
     this.initializeApartments();
     this.initializeApartmentTypes();
   }
 
   initializeApartments() {
-    this.apartmentCollection = this.afs.collection<apartment>('Apartment');
+    this.apartmentCollection = this.afs.collection<apartment>(this.constants.FIREBASE_COLLECTION_APARTMENT);
     this.apt = this.apartmentCollection.snapshotChanges().pipe(map(actions => {
       return actions.map(a => {
         const data = a.payload.doc.data() as apartment;
@@ -36,7 +40,6 @@ export class ApartmentService {
   }
 
   initializeApartmentTypes() {
-    //console.log("initializeApartmentTypes");
     this.apartmentTypeCollection = this.afs.collection<apartmentType>('ApartmentType');
     this.aptType = this.apartmentTypeCollection.snapshotChanges().pipe(map(actions => {
       return actions.map(a => {
@@ -45,6 +48,102 @@ export class ApartmentService {
         return { id, ...data };
       });
     }));
+  }
+
+  createApartments() {
+
+    this.afs.doc('Region/04OcJ9p2x11AJVltxOtZ/Zone/Ks4m03L3QSWlN6szc6Qg/Apartment/qKc3qdNY45XtzYebJKIO').get()
+      .pipe(
+        switchMap(apart => {
+          const a = this.afs.collection(`Region/04OcJ9p2x11AJVltxOtZ/Zone/Ks4m03L3QSWlN6szc6Qg/Apartment/${apart.id}/Beds`).valueChanges()
+            .pipe(
+              map(beds => {
+                console.log(beds);
+                return {
+                  apartment: apart.data(),
+                  beds: beds
+                }
+              }
+              )
+            )
+          return combineLatest(a);
+        })
+      )
+      .subscribe(res => {
+        console.log(res);
+      })
+  }
+
+  getApartmentsByRegionZoneId(regionId: string, zoneId: string) {
+    return this.afs.collection<apartment>(`${this.constants.FIREBASE_COLLECTION_REGION}/${regionId}/${this.constants.FIREBASE_COLLECTION_ZONE}/${zoneId}/${this.constants.FIREBASE_COLLECTION_APARTMENT}`).get()
+      .pipe(
+        mergeMap(apts => {
+          //console.log(zones);
+          const apart = apts.docs.map(apt => {
+            const id = apt.id;
+            const data = apt.data();
+            const objApartment = {
+              id,
+              ...data
+            } as apartment;
+            
+            if(objApartment.Partners.length == 0)
+              objApartment.Partners.push('0');
+
+            return combineLatest(
+              of(objApartment),
+              combineLatest(
+                this.afs.collection<bed>(`${this.constants.FIREBASE_COLLECTION_REGION}/${regionId}/${this.constants.FIREBASE_COLLECTION_ZONE}/${zoneId}/${this.constants.FIREBASE_COLLECTION_APARTMENT}/${objApartment.id}/${this.constants.FIREBASE_COLLECTION_BED}`).get()
+                  .pipe(
+                    map(beds => {
+                      console.log(beds.docs.length);
+                      return {
+                        bedCount: beds.docs.length
+                      }
+                    })
+                  )
+              ),
+              combineLatest(
+                this.afs.collection<users>(this.constants.FIREBASE_COLLECTION_USERS,
+                  ref => ref.where('Uid', 'in', objApartment.Partners)).valueChanges()
+                  .pipe(
+                    map(usrs => {
+                      return {
+                        partners: usrs
+                      }
+                    })
+                  )
+              )
+            ).pipe(
+              map(([apart, beds, partners]) => {
+                return {
+                  apartment: apart,
+                  beds: beds,
+                  partners: partners
+                }
+              })
+            )
+
+          })
+
+          return combineLatest(apart);
+        }),
+        map(items => {
+          return items.map(item => {
+            let partners: string[] = [];
+            item.partners[0].partners.forEach(item => {
+              partners.push(item.FirstName + ' ' + item.LastName)
+            })
+            return {
+              id: item.apartment.id,
+              ApartmentName: item.apartment.ApartmentName,
+              BedCount: item.beds[0].bedCount,
+              PartnerNames: partners,
+              BankAccount: item.apartment.BankAccount
+            } as dashboardItem
+          })
+        })
+      )
   }
 
   getApartments() {
@@ -106,76 +205,44 @@ export class ApartmentService {
 
   }
 
-  createApartment(apartmentId: string, addressId: string, phoneId: string, obj: any) {
+  createApartment(apartmentId: string, obj: any) {
     return Promise<Boolean>((resolve, reject) => {
       //get apartment type doc reference
-      const objAptType = obj.apartmentType;
-      const aptDocRef = this.afs.collection<apartmentType>('ApartmentType').doc(objAptType.id).ref;
-      //Create apartment object
+
       const objApartment: apartment = {
         id: '',
         ApartmentName: obj.apartmentName,
-        Type: aptDocRef,
+        Type: obj.apartmentType.TypeName,
         IsDeleted: false,
-        ModifiedDate: new Date()
+        BankAccount: [],
+        Partners: [],
+        AddressLine1: obj.address1,
+        AddressLine2: obj.address2,
+        AddressLine3: obj.address3,
+        State: obj.state,
+        City:obj.city,
+        PIN: obj.pin,
+        Phones: []
       }
+
+      objApartment.Phones.push(obj.phone1);
+      objApartment.Phones.push(obj.phone2);
 
       delete objApartment.id;
 
       let aptId = this.afs.createId();
-      let addId = this.afs.createId();
-      let phoneId = this.afs.createId();
 
       if (apartmentId == "new") {
         aptId = this.afs.createId();
-        addId = this.afs.createId();
-        phoneId = this.afs.createId();
       }
       else {
         aptId = apartmentId;
-        addId = addressId;
-        phoneId = phoneId;
       }
-      return this.afs.doc(`Apartment/${aptId}`).set(objApartment)
-        .then(rest => {
-          const aptRef = this.afs.doc(`Apartment/${aptId}`).ref;
-          //create address object
-          const objAddress: address = {
-            id: '',
-            AddressType: 'A',
-            ApartmentID: aptRef,
-            Line1: obj.address1,
-            Line2: obj.address2,
-            Line3: obj.address3,
-            State: obj.state,
-            City: obj.city,
-            PIN: obj.pin,
-            UserID: null,
-            VendorID: null,
-            IsDeleted: false,
-            ModifiedDate: new Date()
-          }
-          //create phone object
-          const objPhone: phone = {
-            id: '',
-            ApartmentID: aptRef,
-            Home: 0,
-            Office: 0,
-            Phone1: obj.phone1,
-            Phone2: obj.phone2,
-            UserID: null,
-            VendorID: null,
-            IsDeleted: false,
-            ModifiedDate: new Date()
-          }
-          delete objAddress.id;
-          delete objPhone.id;
 
-          combineLatest(
-            this.afs.doc(`Address/${addId}`).set(objAddress),
-            this.afs.doc(`Phone/${phoneId}`).set(objPhone)
-          )
-            .subscribe(res => resolve(true), err => console.log("sub error:" + err));
+      return this.afs.doc(`Region/04OcJ9p2x11AJVltxOtZ/Zone/Ks4m03L3QSWlN6szc6Qg/Apartment/${aptId}`).set(objApartment)
+        .then(rest => {
+          console.log('success');
+          resolve(true);
         })
         .catch(err => {
           console.log('error createApartment service');
@@ -187,17 +254,6 @@ export class ApartmentService {
 
   }
 
-  getNewApartment(): apartment {
-    const apt: apartment = {
-      id: '',
-      Type: '',
-      ApartmentName: '',
-      IsDeleted: false,
-      ModifiedDate: new Date()
-    }
-    return apt;
-  }
-
   getApartmentTypes() {
     if (!this.aptType)
       this.initializeApartmentTypes();
@@ -206,4 +262,5 @@ export class ApartmentService {
     //console.log(this.aptType);
     return this.aptType;
   }
+
 }

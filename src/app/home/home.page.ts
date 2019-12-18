@@ -1,4 +1,7 @@
 import { Component, OnInit } from '@angular/core';
+import { Observable } from 'rxjs';
+import { CommonService } from '../services/common.service';
+import { region } from '../Interfaces/region';
 
 @Component({
   selector: 'app-home',
@@ -6,10 +9,11 @@ import { Component, OnInit } from '@angular/core';
   styleUrls: ['./home.page.scss'],
 })
 export class HomePage implements OnInit {
-
-  constructor() { }
+  regions:Observable<region[]>;
+  constructor(private common: CommonService) { }
 
   ngOnInit() {
+    this.regions = this.common.getRegions();
   }
 
 }
