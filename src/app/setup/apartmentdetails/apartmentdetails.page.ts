@@ -145,7 +145,7 @@ export class ApartmentdetailsPage implements OnInit {
 
   onSaveClick() {
     this.loader.showLoader();
-    this.apartmentService.createApartment(this.aptId, this.addId, this.phoneId, this.apartmentForm.value)
+    this.apartmentService.createApartment(this.aptId, this.apartmentForm.value)
       .then(res => {
         this.loader.hideLoader();
         this.presentAlert('Facility created successfully');
